@@ -1,9 +1,15 @@
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #define MAXSIZE 20
 #define OK 1
 #define ERROR 0
+#define OUTFAIL(PARAM)                                                         \
+    printf("%s test fail. line is %d.\n", functionName, __LINE__);             \
+    return PARAM;
+#define OUTSUCCESS(PARAM)                                                      \
+    printf("%s test success.\n", functionName);                                \
+    return PARAM;
 
 typedef int ElementType;
 typedef struct {
@@ -19,16 +25,32 @@ Status getElement(SqList list, int index, ElementType *elementPointer);
 int locateElement(SqList list, ElementType elem);
 Status insertElement(SqList *listPointer, int index, ElementType element);
 Status appendElement(SqList *listPointer, ElementType element);
-Status deleteElement(SqList *listPointer, int index, ElementType *elementPointer);
+Status deleteElement(SqList *listPointer, int index,
+                     ElementType *elementPointer);
 int listLen(SqList list);
+Status createListHead(SqList *listPointer, ElementType *valuesPointer,
+                      int valueCounter);
+Status createListTail(SqList *listPointer, ElementType *valuesPointer,
+                      int valueCounter);
+
+void testInitList();
+void testIsEmpty();
+void testClearList();
+void testGetElement();
+void testLocateElement();
+void testInsertElement();
+void testAppendElement();
+void testDeleteElement();
+void testListLen();
+void testCreateListHead();
+void testCreateListTail();
 
 Status initList(SqList *listPointer) {
     listPointer->length = 0;
+    return OK;
 }
 
-bool isEmpty(SqList list) {
-    return 0 == list.length;
-}
+bool isEmpty(SqList list) { return 0 == list.length; }
 
 Status clearList(SqList *listPointer) {
     int i;
@@ -36,6 +58,7 @@ Status clearList(SqList *listPointer) {
         listPointer->data[i - 1] = 0;
     }
     listPointer->length = 0;
+    return OK;
 }
 
 Status getElement(SqList list, int index, ElementType *elementPointer) {
@@ -58,10 +81,11 @@ int locateElement(SqList list, ElementType element) {
 
 Status insertElement(SqList *listPointer, int index, ElementType element) {
     int i;
-    if (listPointer->length == MAXSIZE || index < 1 || index > listPointer->length + 1) {
+    if (listPointer->length == MAXSIZE || index < 1 ||
+        index > listPointer->length + 1) {
         return ERROR;
     }
-    for (i = listPointer->length - 1; i >=  index - 1; i--) {
+    for (i = listPointer->length - 1; i >= index - 1; i--) {
         listPointer->data[i + 1] = listPointer->data[i];
     }
     listPointer->data[index - 1] = element;
@@ -73,7 +97,8 @@ Status appendElement(SqList *listPointer, ElementType element) {
     return insertElement(listPointer, listPointer->length + 1, element);
 }
 
-Status deleteElement(SqList *listPointer, int index, ElementType *elementPointer) {
+Status deleteElement(SqList *listPointer, int index,
+                     ElementType *elementPointer) {
     int i;
     if (index < 1 || index > listPointer->length) {
         return ERROR;
@@ -87,35 +112,61 @@ Status deleteElement(SqList *listPointer, int index, ElementType *elementPointer
     return OK;
 }
 
-int listLen(SqList list) {
-    return list.length;
-}
-
+int listLen(SqList list) { return list.length; }
 
 int main() {
-    int i;
-    ElementType element;
+    testInitList();
+    testIsEmpty();
+    testClearList();
+    // testGetElement();
+    // testLocateElement();
+    // testInsertElement();
+    // testAppendElement();
+    // testDeleteElement();
+    // testListLen();
+    // testCreateListHead();
+    // testCreateListTail();
+}
+
+void testInitList() {
+    SqList list;
+    char *functionName = "initList";
+    if (!initList(&list)) {
+        OUTFAIL();
+    }
+    if (0 != list.length) {
+        OUTFAIL();
+        return;
+    }
+    OUTSUCCESS();
+}
+
+void testIsEmpty() {
+    SqList list;
+    char *functionName = "isEmpty";
+    initList(&list);
+    if (!isEmpty(list)) {
+        OUTFAIL();
+        return;
+    }
+    appendElement(&list, 3);
+    if (isEmpty(list)) {
+        OUTFAIL();
+        return;
+    }
+    OUTSUCCESS();
+}
+
+void testClearList() {
+    char *functionName = "clearList";
     SqList list;
     initList(&list);
-    if (isEmpty(list)) {
-        printf("List is empty.\n");
+    appendElement(&list, 3);
+    if (!clearList(&list)) {
+        OUTFAIL();
     }
-    insertElement(&list, 1, 3);
-    insertElement(&list, 2, 5);
-    insertElement(&list, 2, 4);
-    for (i = 1; i <= listLen(list); i++) {
-        getElement(list, i, &element);
-        printf("%d\n", element);
+    if (!isEmpty(list)) {
+        OUTFAIL();
     }
-    printf("%d\n", locateElement(list, 4));
-    printf("%d\n", locateElement(list, 9));
-    deleteElement(&list, 2, &element);
-    printf("%d %d %d %d %d\n", element, list.length, list.data[0], list.data[1], list.data[2]);
-    appendElement(&list, 6);
-    getElement(list, 3, &element);
-    printf("%d %d\n", list.length, element);
-    clearList(&list);
-    printf("%d\n", list.data[2]);
-    printf("%d\n", listLen(list));
-    return 0;
+    OUTSUCCESS();
 }
