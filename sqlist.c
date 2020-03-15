@@ -28,17 +28,17 @@
 typedef int ElementType;
 
 /**
+ * 定义需要同时获取「执行是否成功」标志类型
+ */
+typedef bool Status;
+
+/**
  * 定义线性表结构。使用数组存储数据；使用整数任长度计数
  */
 typedef struct {
     ElementType data[MAXSIZE];
     int length;
 } SqList;
-
-/**
- * 定义需要同时获取「执行是否成功」标志类型
- */
-typedef bool Status;
 
 /**
  * 初始化 listPointer 指向的线性表。执行成功返回 OK，失败返回 ERROR
@@ -180,9 +180,6 @@ Status initList(SqList *listPointer) {
 bool isEmpty(SqList list) { return 0 == list.length; }
 
 Status clearList(SqList *listPointer) {
-    if (listPointer->length < 0) {
-        return initList(listPointer);
-    }
     int i;
     for (i = 1; i <= listPointer->length; ++i) {
         listPointer->data[i - 1] = 0;
@@ -282,16 +279,16 @@ int main() {
     testCreateListTail();
 }
 
-void setup(SqList *list, int count) {
+void setup(SqList *listPointer, int count) {
     int i;
     for (i = 0; i < MAXSIZE; ++i) {
         if (i < count) {
-            list->data[i] = i + 3;
+            listPointer->data[i] = i + 3;
         } else {
-            list->data[i] = 0;
+            listPointer->data[i] = 0;
         }
     }
-    list->length = count;
+    listPointer->length = count;
 }
 
 void testInitList() {
@@ -330,6 +327,7 @@ void testClearList() {
     char functionName[] = "clearList";
     SqList list;
     int i;
+    setup(&list, 0);
     if (!clearList(&list)) {
         OUTFAIL();
     }
