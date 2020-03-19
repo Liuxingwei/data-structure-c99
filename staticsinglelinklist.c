@@ -65,6 +65,26 @@ int mallocSsll(StaticSingleLinkList *listPointer);
 Status freeSsll(StaticSingleLinkList *listPointer, int index);
 
 /**
+ * 判断线性表 list 是否为空。为空返回 true，不为空返回 false
+ */
+bool isEmpty(StaticSingleLinkList list);
+
+/**
+ * 清空 listPointer 指针指向的线性表。执行成功返回 OK，失败返回 ERROR
+ */
+Status clearList(StaticSingleLinkList *listPointer);
+
+/**
+ * 删除 listPointer 指针指向的线性表的第 index 个元素，并将删除的元素值放在
+ * elementPointer 指针指向的变量中 执行成功返回 OK，失败返回 ERROR
+ */
+Status deleteElement(StaticSingleLinkList *listPointer, int index,
+                     ElementType *elementPointer);
+/**
+ * 计算线性表 list 的长度
+ */
+int listLen(StaticSingleLinkList list);
+/**
  * 使用连续 count 个整数填 listPointer 指针指向的线性表，起始数值为 3。
  * 用于在测试时初始化线性表
  */
@@ -84,6 +104,26 @@ void testMallocSsll();
  * freeSsll 函数的测试函数
  */
 void testFreeSsll();
+
+/**
+ * isEmpty 函数的测试函数
+ */
+void testIsEmpty();
+
+/**
+ * deleteElement 函数的测试函数
+ */
+void testDeleteElement();
+
+/**
+ * clearList 函数的测试函数
+ */
+void testClearList();
+
+/**
+ * listLen 函数的测试函数
+ */
+void testListLen();
 
 Status initList(StaticSingleLinkList *listPointer) {
     int i;
@@ -122,10 +162,45 @@ Status freeSsll(StaticSingleLinkList *listPointer, int index) {
     return OK;
 }
 
+bool isEmpty(StaticSingleLinkList list) { return 0 == list.length; }
+
+Status clearList(StaticSingleLinkList *listPointer) {
+    int i;
+    for (i = 0; i < MAXSIZE - 1; ++i) {
+        listPointer->nodes[i].next = i + 1;
+    }
+    listPointer->nodes[MAXSIZE - 1].next = 0;
+    listPointer->length = 0;
+    return OK;
+}
+
+Status deleteElement(StaticSingleLinkList *listPointer, int index,
+                     ElementType *valuePointer) {
+    if (index < 1 || index > listLen(*listPointer)) {
+        return ERROR;
+    }
+    int t, i;
+    Node *n = &(listPointer->nodes[MAXSIZE - 1]);
+    for (i = 1; i < index; ++i) {
+        n = &(listPointer->nodes[n->next]);
+    }
+    t = n->next;
+    n->next = listPointer->nodes[t].next;
+    *valuePointer = listPointer->nodes[t].value;
+    freeSsll(listPointer, t);
+    return OK;
+}
+
+int listLen(StaticSingleLinkList list) { return list.length; }
+
 void main() {
     testInitList();
     testMallocSsll();
     testFreeSsll();
+    testIsEmpty();
+    testClearList();
+    testDeleteElement();
+    testListLen();
 }
 
 void setup(StaticSingleLinkList *listPointer, int count) {
@@ -214,6 +289,105 @@ void testFreeSsll() {
     setup(&list, 5);
     if (!freeSsll(&list, 3) || 3 != list.nodes[0].next ||
         6 != list.nodes[3].next) {
+        OUTFAIL();
+    }
+    OUTSUCCESS();
+}
+
+void testIsEmpty() {
+    char functionName[] = "isEmpty";
+    StaticSingleLinkList list;
+    list.length = 0;
+    if (!isEmpty(list)) {
+        OUTFAIL();
+    }
+    list.length = 3;
+    if (isEmpty(list)) {
+        OUTFAIL();
+    }
+    OUTSUCCESS();
+}
+
+void testClearList() {
+    char functionName[] = "clearList";
+    StaticSingleLinkList list;
+    int i;
+    setup(&list, 0);
+    if (!clearList(&list)) {
+        OUTFAIL();
+    }
+    if (0 != list.length) {
+        OUTFAIL();
+    }
+    for (i = 0; i < MAXSIZE - 1; ++i) {
+        if (i + 1 != list.nodes[i].next) {
+            OUTFAIL();
+        }
+    }
+    if (0 != list.nodes[i].next) {
+        OUTFAIL();
+    }
+    setup(&list, 6);
+    if (!clearList(&list)) {
+        OUTFAIL();
+    }
+    if (0 != list.length) {
+        OUTFAIL();
+    }
+    for (i = 0; i < MAXSIZE - 1; ++i) {
+        if (i + 1 != list.nodes[i].next) {
+            OUTFAIL();
+        }
+    }
+    if (0 != list.nodes[i].next) {
+        OUTFAIL();
+    }
+    OUTSUCCESS();
+}
+
+void testDeleteElement() {
+    char functionName[] = "deleteElement";
+    StaticSingleLinkList list;
+    ElementType value;
+    setup(&list, 5);
+    if (deleteElement(&list, 0, &value)) {
+        OUTFAIL();
+    }
+    if (deleteElement(&list, 6, &value)) {
+        OUTFAIL();
+    }
+    if (!deleteElement(&list, 3, &value)) {
+        OUTFAIL();
+    }
+    if (5 != value) {
+        OUTFAIL();
+    }
+    if (1 != list.nodes[MAXSIZE - 1].next || 2 != list.nodes[1].next ||
+        4 != list.nodes[2].next || 5 != list.nodes[4].next ||
+        0 != list.nodes[5].next) {
+        OUTFAIL();
+    }
+    if (3 != list.nodes[0].next || 6 != list.nodes[3].next ||
+        7 != list.nodes[6].next || 8 != list.nodes[7].next ||
+        9 != list.nodes[8].next) {
+        OUTFAIL();
+    }
+    if (3 != list.nodes[1].value || 4 != list.nodes[2].value ||
+        6 != list.nodes[4].value || 7 != list.nodes[5].value) {
+        OUTFAIL();
+    }
+    OUTSUCCESS();
+}
+
+void testListLen() {
+    char functionName[] = "listLen";
+    StaticSingleLinkList list;
+    list.length = 0;
+    if (0 != listLen(list)) {
+        OUTFAIL();
+    }
+    list.length = 5;
+    if (5 != listLen(list)) {
         OUTFAIL();
     }
     OUTSUCCESS();
