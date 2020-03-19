@@ -159,19 +159,14 @@ Status freeSsll(StaticSingleLinkList *listPointer, int index) {
     }
     listPointer->nodes[index].next = listPointer->nodes[0].next;
     listPointer->nodes[0].next = index;
+    listPointer->nodes[index].value = 0;
     return OK;
 }
 
 bool isEmpty(StaticSingleLinkList list) { return 0 == list.length; }
 
 Status clearList(StaticSingleLinkList *listPointer) {
-    int i;
-    for (i = 0; i < MAXSIZE - 1; ++i) {
-        listPointer->nodes[i].next = i + 1;
-    }
-    listPointer->nodes[MAXSIZE - 1].next = 0;
-    listPointer->length = 0;
-    return OK;
+    return initList(listPointer);
 }
 
 Status deleteElement(StaticSingleLinkList *listPointer, int index,
@@ -324,7 +319,7 @@ void testClearList() {
             OUTFAIL();
         }
     }
-    if (0 != list.nodes[i].next) {
+    if (0 != list.nodes[i].next) { 
         OUTFAIL();
     }
     setup(&list, 6);
